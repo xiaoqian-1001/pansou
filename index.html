@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小钱全网盘搜 · 终极版</title>
+
+<style>
+:root{
+--bg:#f5f7fb;
+--card:#fff;
+--text:#1e293b;
+--sub:#64748b;
+--accent:#4a6cf7;
+}
+body.dark{
+--bg:#0f172a;
+--card:#1e293b;
+--text:#f1f5f9;
+--sub:#94a3b8;
+}
+body{
+margin:0;
+font-family:system-ui;
+background:var(--bg);
+color:var(--text);
+}
+
+/* 顶部 */
+.header{
+text-align:center;
+padding:60px 20px 20px;
+}
+h1{
+font-size:32px;
+background:linear-gradient(90deg,#4a6cf7,#ff6b6b);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+/* 搜索 */
+.search{
+display:flex;
+gap:10px;
+justify-content:center;
+flex-wrap:wrap;
+margin-top:20px;
+}
+input{
+padding:14px 20px;
+border-radius:40px;
+border:1px solid #ddd;
+min-width:260px;
+}
+button{
+border:none;
+padding:14px 30px;
+border-radius:40px;
+background:linear-gradient(135deg,#4a6cf7,#6c5ce7);
+color:#fff;
+cursor:pointer;
+}
+
+/* 卡片 */
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+gap:20px;
+padding:20px;
+}
+.card{
+background:var(--card);
+padding:20px;
+border-radius:20px;
+transition:.3s;
+}
+.card:hover{
+transform:translateY(-6px) scale(1.02);
+box-shadow:0 20px 40px rgba(0,0,0,.2);
+}
+
+.tag{
+display:inline-block;
+background:#eef2ff;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+margin:4px;
+}
+
+/* 音乐 */
+.music{
+position:fixed;
+bottom:20px;
+right:20px;
+font-size:26px;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h1>小钱全网盘搜</h1>
+<div class="search">
+<input id="kw" placeholder="搜索电影 / 短剧 / 资源">
+<button onclick="search()">搜索</button>
+</div>
+</div>
+
+<div id="grid" class="grid"></div>
+
+<div class="music" onclick="toggleMusic()">🎵</div>
+
+<audio id="player"></audio>
+
+<script>
+/* ===== 多接口 ===== */
+const APIs=[
+'https://so.252035.xyz/api/search?kw=',
+'https://api2.example.com/search?kw='
+];
+
+/* ===== 缓存 ===== */
+function setCache(k,v){
+localStorage.setItem(k,JSON.stringify({t:Date.now(),v}));
+}
+function getCache(k){
+let d=localStorage.getItem(k);
+if(!d)return null;
+d=JSON.parse(d);
+if(Date.now()-d.t>3600000)return null;
+return d.v;
+}
+
+/* ===== 标签识别 ===== */
+function tags(t){
+let r=[];
+if(/4k/i.test(t))r.push('4K');
+if(/1080/i.test(t))r.push('1080P');
+if(/完结/.test(t))r.push('完结');
+return r;
+}
+
+/* ===== 搜索 ===== */
+async function search(){
+let kw=document.getElementById('kw').value.trim();
+if(!kw)return;
+
+let cache=getCache(kw);
+if(cache){render(cache);return;}
+
+for(let api of APIs){
+try{
+let res=await fetch(api+kw);
+let json=await res.json();
+let data=json.data?.merged_by_type||{};
+let arr=[];
+for(let k in data)arr=arr.concat(data[k]);
+if(arr.length){
+setCache(kw,arr);
+render(arr);
+return;
+}
+}catch(e){}
+}
+alert('接口全部失败');
+}
+
+/* ===== 渲染 ===== */
+function render(arr){
+let html='';
+arr.forEach(i=>{
+html+=`
+<div class="card">
+<div>${i.note||'无标题'}</div>
+<div>${tags(i.note||'').map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+<a href="${i.url}" target="_blank">打开资源</a>
+</div>
+`;
+});
+grid.innerHTML=html;
+}
+
+/* ===== 实时搜索 ===== */
+let timer;
+kw.oninput=()=>{
+clearTimeout(timer);
+timer=setTimeout(search,500);
+};
+
+/* ===== 音乐播放器 ===== */
+const list=[
+'https://mpimg.cn/view.php/93e1ad1d1ff45f0cc3f3d6dedcd6ba3c.mp3',
+'https://mpimg.cn/view.php/93e1ad1d1ff45f0cc3f3d6dedcd6ba3c.mp3'
+];
+let i=0;
+const player=document.getElementById('player');
+
+function toggleMusic(){
+if(player.paused){
+player.src=list[i];
+player.play();
+}else{
+player.pause();
+}
+}
+player.onended=()=>{
+i=(i+1)%list.length;
+player.src=list[i];
+player.play();
+};
+</script>
+
+</body>
+</html>
