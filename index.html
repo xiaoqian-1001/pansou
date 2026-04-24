@@ -1,224 +1,283 @@
-<!-- ⚠️ 代码较长，建议直接复制到本地 index.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>小钱全网盘搜 · 终极完整版</title>
-
+<title>小钱全网盘搜 · 完整版</title>
 <style>
-body{
-font-family:system-ui;
-background:#f5f7fb;
-margin:0;
+body {
+    font-family: system-ui, sans-serif;
+    background: #f5f7fb;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-h1{
-text-align:center;
-margin-top:40px;
-background:linear-gradient(90deg,#4a6cf7,#ff6b6b);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-}
-
-/* 搜索 */
-.search{
-display:flex;
-justify-content:center;
-gap:10px;
-margin:20px;
-}
-input{
-padding:12px 20px;
-border-radius:40px;
-border:1px solid #ddd;
-}
-button{
-border:none;
-padding:12px 25px;
-border-radius:40px;
-background:#4a6cf7;
-color:#fff;
+h1 {
+    margin-top: 40px;
+    font-size: 36px;
+    background: linear-gradient(90deg, #4a6cf7, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-/* 筛选 */
-.filter{
-text-align:center;
-margin:10px;
+.search {
+    margin: 20px;
+    display: flex;
+    gap: 10px;
 }
-.filter button{
-margin:5px;
-padding:6px 14px;
-border-radius:20px;
-border:none;
-background:#eee;
-cursor:pointer;
+input, button {
+    padding: 12px 20px;
+    border-radius: 40px;
+    border: 1px solid #ddd;
 }
-.filter .active{
-background:#4a6cf7;
-color:#fff;
+button {
+    background: #4a6cf7;
+    color: #fff;
+    border: none;
 }
 
-/* 卡片 */
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-gap:20px;
-padding:20px;
+.filter, .grid, .stats {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px;
 }
-.card{
-background:#fff;
-padding:20px;
-border-radius:20px;
-transition:.3s;
+
+.filter {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
 }
-.card:hover{
-transform:translateY(-5px);
-box-shadow:0 20px 40px rgba(0,0,0,.2);
+.filter button {
+    padding: 8px 20px;
+    border-radius: 20px;
+    background: #eef2ff;
+    cursor: pointer;
 }
-.tag{
-background:#eef2ff;
-padding:4px 10px;
-border-radius:20px;
-font-size:12px;
-margin:3px;
-display:inline-block;
+.filter button.active {
+    background: #4a6cf7;
+    color: #fff;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    transition: 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.tag {
+    background: #eef2ff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin: 3px;
+}
+
+.stats {
+    text-align: center;
+    color: #6c757d;
+}
+
+/* 音乐 */
+#musicPlayer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 26px;
+    cursor: pointer;
 }
 </style>
 </head>
-
 <body>
 
 <h1>小钱全网盘搜</h1>
 
 <div class="search">
-<input id="kw" placeholder="搜索资源">
-<button onclick="search()">搜索</button>
+    <input id="kw" placeholder="搜索资源...">
+    <button onclick="search()">搜索</button>
 </div>
 
-<div id="filter" class="filter"></div>
-<div id="grid" class="grid"></div>
+<div class="filter" id="filter"></div>
+<div class="grid" id="grid"></div>
 
+<div class="stats" id="stats">搜索状态显示</div>
+
+<div id="musicPlayer" onclick="toggleMusic()">🎵</div>
 <audio id="music"></audio>
 
 <script>
+// 初始化变量
+let raw = []; // 所有资源数据
+let currentFilter = '全部'; // 当前筛选的类型
+let hotList = []; // 热门资源列表
 
-/* ========= 多接口 ========= */
-const APIs=[
-'https://so.252035.xyz/api/search?kw=',
-'https://api2.example.com/search?kw='
+// API 配置
+const APIs = [
+    'https://so.252035.xyz/api/search?kw=',
+    'https://api2.example.com/search?kw='
 ];
 
-/* ========= 缓存 ========= */
-function setCache(k,v){
-localStorage.setItem(k,JSON.stringify({t:Date.now(),v}));
-}
-function getCache(k){
-let d=localStorage.getItem(k);
-if(!d)return null;
-d=JSON.parse(d);
-if(Date.now()-d.t>3600000)return null;
-return d.v;
+// 缓存函数
+function setCache(key, value) {
+    localStorage.setItem(key, JSON.stringify({ t: Date.now(), v: value }));
 }
 
-/* ========= 标签 ========= */
-function getTags(t){
-let r=[];
-if(/4k/i.test(t))r.push('4K');
-if(/1080/i.test(t))r.push('1080P');
-if(/完结/.test(t))r.push('完结');
-if(/更新/.test(t))r.push('更新中');
-return r;
+function getCache(key) {
+    let data = localStorage.getItem(key);
+    if (!data) return null;
+    data = JSON.parse(data);
+    if (Date.now() - data.t > 3600000) return null; // 缓存1小时过期
+    return data.v;
 }
 
-/* ========= 网盘识别 ========= */
-function disk(url){
-if(url.includes('baidu'))return '百度';
-if(url.includes('aliyun'))return '阿里';
-if(url.includes('quark'))return '夸克';
-return '其他';
+// 获取标签
+function getTags(title) {
+    const tags = [];
+    if (/4K/i.test(title)) tags.push('4K');
+    if (/1080/i.test(title)) tags.push('1080P');
+    if (/完结/i.test(title)) tags.push('完结');
+    if (/更新/i.test(title)) tags.push('更新中');
+    return tags;
 }
 
-let raw=[]; 
-let current='全部';
-
-/* ========= 搜索 ========= */
-async function search(){
-let kw=document.getElementById('kw').value.trim();
-if(!kw)return;
-
-let cache=getCache(kw);
-if(cache){
-raw=cache;
-renderFilter();
-render();
-return;
+// 获取资源盘类型
+function getDiskType(url) {
+    if (url.includes('baidu')) return '百度';
+    if (url.includes('aliyun')) return '阿里';
+    if (url.includes('quark')) return '夸克';
+    return '其他';
 }
 
-for(let api of APIs){
-try{
-let r=await fetch(api+kw);
-let j=await r.json();
-let data=j.data?.merged_by_type||{};
-let arr=[];
-for(let k in data)arr=arr.concat(data[k]);
-if(arr.length){
-raw=arr;
-setCache(kw,arr);
-renderFilter();
-render();
-return;
-}
-}catch(e){}
-}
-alert('接口全挂了');
+// 渲染筛选按钮
+function renderFilter() {
+    const types = [...new Set(raw.map(item => getDiskType(item.url)))];
+    let html = '<button onclick="setFilter(\'全部\')" class="' + (currentFilter === '全部' ? 'active' : '') + '">全部</button>';
+    types.forEach(type => {
+        html += `<button onclick="setFilter('${type}')" class="${currentFilter === type ? 'active' : ''}">${type}</button>`;
+    });
+    document.getElementById('filter').innerHTML = html;
 }
 
-/* ========= 筛选 ========= */
-function renderFilter(){
-let types=[...new Set(raw.map(i=>disk(i.url)))];
-let html='<button onclick="setFilter(\'全部\')" class="'+(current=='全部'?'active':'')+'">全部</button>';
-types.forEach(t=>{
-html+=`<button onclick="setFilter('${t}')" class="${current==t?'active':''}">${t}</button>`;
+// 设置筛选
+function setFilter(type) {
+    currentFilter = type;
+    render();
+    renderFilter();
+}
+
+// 渲染资源卡片
+function render() {
+    const filtered = raw.filter(item => currentFilter === '全部' || getDiskType(item.url) === currentFilter);
+    let html = '';
+    filtered.forEach(item => {
+        html += `
+            <div class="card">
+                <div>${item.note || '无标题'}</div>
+                <div>${getTags(item.note || '').map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                <a href="${item.url}" target="_blank">打开</a>
+            </div>
+        `;
+    });
+    document.getElementById('grid').innerHTML = html;
+
+    // 更新统计信息
+    document.getElementById('stats').innerText = `找到 ${filtered.length} 个资源`;
+}
+
+// 搜索功能
+async function search() {
+    const keyword = document.getElementById('kw').value.trim();
+    if (!keyword) return;
+
+    const cache = getCache(keyword);
+    if (cache) {
+        raw = cache;
+        renderFilter();
+        render();
+        return;
+    }
+
+    // 从API获取数据
+    for (let api of APIs) {
+        try {
+            const response = await fetch(api + keyword);
+            const data = await response.json();
+            const items = data.data?.merged_by_type || {};
+            let allItems = [];
+            for (let type in items) allItems = allItems.concat(items[type]);
+            if (allItems.length) {
+                raw = allItems;
+                setCache(keyword, allItems);
+                renderFilter();
+                render();
+                return;
+            }
+        } catch (e) {
+            console.error('API请求失败:', e);
+        }
+    }
+    alert('未能找到相关资源');
+}
+
+// 实时搜索
+let searchTimeout;
+document.getElementById('kw').addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(search, 500);
 });
-filter.innerHTML=html;
-}
-function setFilter(t){
-current=t;
-renderFilter();
-render();
-}
 
-/* ========= 渲染 ========= */
-function render(){
-let arr=raw.filter(i=>current=='全部'||disk(i.url)==current);
-let html='';
-arr.forEach(i=>{
-html+=`
-<div class="card">
-<div>${i.note||'无标题'}</div>
-<div>${getTags(i.note||'').map(t=>`<span class="tag">${t}</span>`).join('')}</div>
-<a href="${i.url}" target="_blank">打开</a>
-</div>
-`;
-});
-grid.innerHTML=html;
-}
-
-/* ========= 实时搜索 ========= */
-let timer;
-kw.oninput=()=>{
-clearTimeout(timer);
-timer=setTimeout(search,500);
-};
-
-/* ========= 音乐 ========= */
-const list=[
-'https://mpimg.cn/view.php/93e1ad1d1ff45f0cc3f3d6dedcd6ba3c.mp3'
+// 音乐播放器
+let musicIndex = 0;
+const musicList = [
+    'https://mpimg.cn/view.php/93e1ad1d1ff45f0cc3f3d6dedcd6ba3c.mp3',
+    'https://mpimg.cn/view.php/93e1ad1d1ff45f0cc3f3d6dedcd6ba3c.mp3'
 ];
-let i=0;
-music.onclick=()=>{
-music.src=list[i];
-music.play();
+const musicElement = document.getElementById('music');
+
+function toggleMusic() {
+    if (musicElement.paused) {
+        musicElement.src = musicList[musicIndex];
+        musicElement.play();
+    } else {
+        musicElement.pause();
+    }
+}
+
+musicElement.onended = () => {
+    musicIndex = (musicIndex + 1) % musicList.length;
+    musicElement.src = musicList[musicIndex];
+    musicElement.play();
 };
+
+// 热门榜单功能
+function renderHotList() {
+    const hotHTML = hotList.map(item => `
+        <div class="card">
+            <div>${item.note}</div>
+            <a href="${item.url}" target="_blank">打开</a>
+        </div>
+    `).join('');
+    document.getElementById('grid').innerHTML = hotHTML;
+}
+
+// 假设获取热门榜单数据
+setInterval(() => {
+    hotList = raw.slice(0, 5); // 假设展示前五个
+    renderHotList();
+}, 10000);
+
 </script>
 
 </body>
