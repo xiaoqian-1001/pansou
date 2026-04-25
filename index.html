@@ -64,7 +64,11 @@ button {
     color: #fff;
     font-weight: 500;
 }
-.search button:hover {
+.search button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+.search button:hover:not(:disabled) {
     background: #3b5be0;
 }
 
@@ -104,6 +108,7 @@ button {
     border-radius: 20px;
     transition: 0.3s;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    position: relative;
 }
 .card:hover {
     transform: translateY(-5px);
@@ -136,6 +141,18 @@ button {
     font-size: 14px;
 }
 
+.status {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+.status.ok { background: #10b981; color: #fff; }
+.status.err { background: #ef4444; color: #fff; }
+.status.load { background: #f59e0b; color: #fff; }
+
 .stats {
     text-align: center;
     color: #6c757d;
@@ -147,7 +164,20 @@ button {
     color: #999;
 }
 
-/* 音乐悬浮按钮 */
+.check-bar {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+#checkAllBtn {
+    background: #0ea5e9;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
 #musicPlayer {
     position: fixed;
     bottom: 25px;
@@ -165,7 +195,6 @@ button {
     user-select: none;
 }
 
-/* 移动端适配 */
 @media (max-width: 600px) {
     h1 { font-size: 28px; }
     .grid { grid-template-columns: 1fr; }
@@ -175,11 +204,15 @@ button {
 <body>
 
 <h1>小钱全网盘搜</h1>
-<div class="desc">聚合多网盘资源 · 一键搜索</div>
+<div class="desc">聚合多网盘资源 · 一键搜索 · 批量检测有效性</div>
 
 <div class="search">
     <input id="kw" placeholder="输入影片、书籍、软件、资源...">
-    <button onclick="search()">搜索</button>
+    <button id="searchBtn" onclick="search()">搜索</button>
+</div>
+
+<div class="check-bar">
+    <button id="checkAllBtn" onclick="checkAllLinks()">🔍 检测当前所有链接有效性</button>
 </div>
 
 <div class="filter" id="filter"></div>
@@ -192,12 +225,10 @@ button {
 <audio id="music">
 
 <script>
-// 全局变量
 let raw = [];
 let currentFilter = '全部';
-let hotList = [];
+let searchTimeout = null;
 
-// 有效API（保留你原有结构，可后续自行增删）
 const APIs = [
     'https://so.252035.xyz/api/search?kw='
 ];
@@ -214,7 +245,7 @@ function getCache(key) {
     return obj.v;
 }
 
-// 标签识别
+// 标签
 function getTags(title) {
     const tags = [];
     if (/4K|4k/.test(title)) tags.push('4K');
@@ -230,10 +261,16 @@ function getDiskType(url) {
     if (url.includes('baidu')) return '百度网盘';
     if (url.includes('aliyun')) return '阿里云盘';
     if (url.includes('quark')) return '夸克网盘';
+    if (url.includes('123')) return '123云盘';
+    if (url.includes('tianyi')) return '天翼云盘';
+    if (url.includes('115')) return '115网盘';
+    if (url.includes('xunlei')) return '迅雷云盘';
+    if (url.includes('uc')) return 'UC网盘';
+    if (url.includes('10086')) return '移动云盘';
     return '其他网盘';
 }
 
-// 渲染筛选栏
+// 渲染
 function renderFilter() {
     const typeList = [...new Set(raw.map(item => getDiskType(item.url)))];
     let html = `<button onclick="setFilter('全部')" class="${currentFilter === '全部' ? 'active' : ''}">全部</button>`;
@@ -243,14 +280,12 @@ function renderFilter() {
     document.getElementById('filter').innerHTML = html;
 }
 
-// 筛选切换
 function setFilter(type) {
     currentFilter = type;
     render();
     renderFilter();
 }
 
-// 渲染列表
 function render() {
     const emptyTip = document.getElementById('emptyTip');
     const filtered = raw.filter(item => currentFilter === '全部' || getDiskType(item.url) === currentFilter);
@@ -264,10 +299,12 @@ function render() {
     emptyTip.style.display = 'none';
 
     let html = '';
-    filtered.forEach(item => {
+    filtered.forEach((item, idx) => {
         const tagHtml = getTags(item.note || '').map(tag => `<span class="tag">${tag}</span>`).join('');
+        const status = item.check ? `<span class="status ${item.ok ? 'ok' : 'err'}">${item.ok ? '有效' : '失效'}</span>` : '';
         html += `
-        <div class="card">
+        <div class="card" data-idx="${idx}">
+            ${status}
             <div class="title">${item.note || '无标题'}</div>
             <div class="tag-wrap">${tagHtml}</div>
             <a href="${item.url}" target="_blank">立即打开</a>
@@ -278,23 +315,33 @@ function render() {
     document.getElementById('stats').innerText = `共找到 ${filtered.length} 个资源`;
 }
 
-// 搜索
+// 搜索（加了加载状态）
 async function search() {
     const kw = document.getElementById('kw').value.trim();
+    const searchBtn = document.getElementById('searchBtn');
+    const stats = document.getElementById('stats');
     if (!kw) return;
 
-    // 读取缓存
+    // 显示搜索中
+    searchBtn.innerText = '搜索中…';
+    searchBtn.disabled = true;
+    stats.innerText = '🔍 正在搜索，请稍候…';
+    document.getElementById('grid').innerHTML = '';
+    document.getElementById('emptyTip').style.display = 'none';
+
     const cache = getCache(kw);
     if (cache) {
         raw = cache;
         renderFilter();
         render();
+        // 恢复按钮
+        searchBtn.innerText = '搜索';
+        searchBtn.disabled = false;
         return;
     }
 
-    // 请求API
-    for (let api of APIs) {
-        try {
+    try {
+        for (let api of APIs) {
             const res = await fetch(api + encodeURIComponent(kw));
             const json = await res.json();
             const data = json.data?.merged_by_type || {};
@@ -307,19 +354,58 @@ async function search() {
                 render();
                 return;
             }
-        } catch (e) {
-            console.error('接口请求失败：', e);
         }
+        // 没找到
+        raw = [];
+        render();
+        alert('未查询到相关资源，换个关键词试试');
+    } catch (e) {
+        console.error('接口请求失败：', e);
+        stats.innerText = '❌ 搜索出错，请重试';
+    } finally {
+        // 无论成功失败都恢复按钮
+        searchBtn.innerText = '搜索';
+        searchBtn.disabled = false;
     }
-    alert('未查询到相关资源，换个关键词试试');
 }
 
-// 输入框回车搜索
 document.getElementById('kw').addEventListener('keydown', e => {
     if (e.key === 'Enter') search();
 });
+document.getElementById('kw').addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(search, 600);
+});
 
-// 音乐播放器
+// 集成 pancheck.199333.xyz 检测
+async function checkAllLinks() {
+    if (raw.length === 0) { alert('请先搜索出资源'); return; }
+    document.getElementById('checkAllBtn').innerText = '检测中...';
+    document.getElementById('checkAllBtn').disabled = true;
+
+    for (let i = 0; i < raw.length; i++) {
+        raw[i].check = true;
+        raw[i].ok = false;
+    }
+    render();
+
+    for (let i = 0; i < raw.length; i++) {
+        const item = raw[i];
+        try {
+            const r = await fetch(`https://pancheck.199333.xyz/check?url=${encodeURIComponent(item.url)}`);
+            const j = await r.json();
+            item.ok = j.status === 'ok' || j.valid === true;
+        } catch (e) {
+            item.ok = false;
+        }
+        render();
+    }
+
+    document.getElementById('checkAllBtn').innerText = '🔍 检测当前所有链接有效性';
+    document.getElementById('checkAllBtn').disabled = false;
+}
+
+// 音乐
 let musicIndex = 0;
 const musicList = [
     'https://mpimg.cn/view.php/93e1ad1d1ff45f0cc3f3d6dedcd6ba3c.mp3'
