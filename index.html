@@ -2,57 +2,90 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>小钱全网盘搜 · 完整版</title>
 <style>
-body {
-    font-family: system-ui, sans-serif;
-    background: #f5f7fb;
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #f5f7fb;
+    color: #222;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-bottom: 80px;
 }
 h1 {
     margin-top: 40px;
     font-size: 36px;
+    font-weight: 700;
     background: linear-gradient(90deg, #4a6cf7, #ff6b6b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+.desc {
+    color: #666;
+    margin: 8px 0 20px;
+    font-size: 14px;
+}
 
 .search {
-    margin: 20px;
+    margin: 10px 20px;
     display: flex;
     gap: 10px;
+    width: 100%;
+    max-width: 600px;
 }
-input, button {
+input {
+    flex: 1;
     padding: 12px 20px;
     border-radius: 40px;
     border: 1px solid #ddd;
+    outline: none;
+    font-size: 15px;
+    transition: 0.2s;
+}
+input:focus {
+    border-color: #4a6cf7;
 }
 button {
+    padding: 12px 24px;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.search button {
     background: #4a6cf7;
     color: #fff;
-    border: none;
+    font-weight: 500;
+}
+.search button:hover {
+    background: #3b5be0;
 }
 
 .filter, .grid, .stats {
     width: 100%;
     max-width: 1200px;
-    margin: 20px;
+    margin: 15px auto;
+    padding: 0 20px;
 }
 
 .filter {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
-    margin-bottom: 20px;
 }
 .filter button {
     padding: 8px 20px;
     border-radius: 20px;
     background: #eef2ff;
-    cursor: pointer;
+    color: #4a6cf7;
 }
 .filter button.active {
     background: #4a6cf7;
@@ -61,7 +94,7 @@ button {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px;
 }
 
@@ -70,138 +103,188 @@ button {
     padding: 20px;
     border-radius: 20px;
     transition: 0.3s;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 .card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
-
+.card .title {
+    font-size: 15px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+.tag-wrap {
+    margin: 8px 0 12px;
+}
 .tag {
+    display: inline-block;
     background: #eef2ff;
-    padding: 4px 10px;
+    color: #4a6cf7;
+    padding: 3px 10px;
     border-radius: 20px;
     font-size: 12px;
-    margin: 3px;
+    margin: 2px;
+}
+.card a {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #4a6cf7;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 14px;
 }
 
 .stats {
     text-align: center;
     color: #6c757d;
+    font-size: 14px;
+}
+.empty {
+    text-align: center;
+    padding: 60px 0;
+    color: #999;
 }
 
-/* 音乐 */
+/* 音乐悬浮按钮 */
 #musicPlayer {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    font-size: 26px;
+    bottom: 25px;
+    right: 25px;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    background: #4a6cf7;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 22px;
     cursor: pointer;
+    box-shadow: 0 4px 15px #4a6cf750;
+    user-select: none;
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+    h1 { font-size: 28px; }
+    .grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
 <h1>小钱全网盘搜</h1>
+<div class="desc">聚合多网盘资源 · 一键搜索</div>
 
 <div class="search">
-    <input id="kw" placeholder="搜索资源...">
+    <input id="kw" placeholder="输入影片、书籍、软件、资源...">
     <button onclick="search()">搜索</button>
 </div>
 
 <div class="filter" id="filter"></div>
 <div class="grid" id="grid"></div>
+<div class="empty" id="emptyTip" style="display:none;">暂无匹配资源</div>
 
-<div class="stats" id="stats">搜索状态显示</div>
+<div class="stats" id="stats">请输入关键词进行搜索</div>
 
 <div id="musicPlayer" onclick="toggleMusic()">🎵</div>
-<audio id="music"></audio>
+<audio id="music">
 
 <script>
-// 初始化变量
-let raw = []; // 所有资源数据
-let currentFilter = '全部'; // 当前筛选的类型
-let hotList = []; // 热门资源列表
+// 全局变量
+let raw = [];
+let currentFilter = '全部';
+let hotList = [];
 
-// API 配置
+// 有效API（保留你原有结构，可后续自行增删）
 const APIs = [
-    'https://so.252035.xyz/api/search?kw=',
-    'https://api2.example.com/search?kw='
+    'https://so.252035.xyz/api/search?kw='
 ];
 
-// 缓存函数
+// 缓存
 function setCache(key, value) {
     localStorage.setItem(key, JSON.stringify({ t: Date.now(), v: value }));
 }
-
 function getCache(key) {
-    let data = localStorage.getItem(key);
+    const data = localStorage.getItem(key);
     if (!data) return null;
-    data = JSON.parse(data);
-    if (Date.now() - data.t > 3600000) return null; // 缓存1小时过期
-    return data.v;
+    const obj = JSON.parse(data);
+    if (Date.now() - obj.t > 3600000) return null;
+    return obj.v;
 }
 
-// 获取标签
+// 标签识别
 function getTags(title) {
     const tags = [];
-    if (/4K/i.test(title)) tags.push('4K');
-    if (/1080/i.test(title)) tags.push('1080P');
-    if (/完结/i.test(title)) tags.push('完结');
-    if (/更新/i.test(title)) tags.push('更新中');
+    if (/4K|4k/.test(title)) tags.push('4K');
+    if (/1080|720/.test(title)) tags.push('高清');
+    if (/完结/.test(title)) tags.push('完结');
+    if (/更新/.test(title)) tags.push('更新中');
+    if (/合集/.test(title)) tags.push('合集');
     return tags;
 }
 
-// 获取资源盘类型
+// 网盘类型
 function getDiskType(url) {
-    if (url.includes('baidu')) return '百度';
-    if (url.includes('aliyun')) return '阿里';
-    if (url.includes('quark')) return '夸克';
-    return '其他';
+    if (url.includes('baidu')) return '百度网盘';
+    if (url.includes('aliyun')) return '阿里云盘';
+    if (url.includes('quark')) return '夸克网盘';
+    return '其他网盘';
 }
 
-// 渲染筛选按钮
+// 渲染筛选栏
 function renderFilter() {
-    const types = [...new Set(raw.map(item => getDiskType(item.url)))];
-    let html = '<button onclick="setFilter(\'全部\')" class="' + (currentFilter === '全部' ? 'active' : '') + '">全部</button>';
-    types.forEach(type => {
+    const typeList = [...new Set(raw.map(item => getDiskType(item.url)))];
+    let html = `<button onclick="setFilter('全部')" class="${currentFilter === '全部' ? 'active' : ''}">全部</button>`;
+    typeList.forEach(type => {
         html += `<button onclick="setFilter('${type}')" class="${currentFilter === type ? 'active' : ''}">${type}</button>`;
     });
     document.getElementById('filter').innerHTML = html;
 }
 
-// 设置筛选
+// 筛选切换
 function setFilter(type) {
     currentFilter = type;
     render();
     renderFilter();
 }
 
-// 渲染资源卡片
+// 渲染列表
 function render() {
+    const emptyTip = document.getElementById('emptyTip');
     const filtered = raw.filter(item => currentFilter === '全部' || getDiskType(item.url) === currentFilter);
+
+    if (filtered.length === 0) {
+        document.getElementById('grid').innerHTML = '';
+        emptyTip.style.display = 'block';
+        document.getElementById('stats').innerText = `共找到 0 个资源`;
+        return;
+    }
+    emptyTip.style.display = 'none';
+
     let html = '';
     filtered.forEach(item => {
+        const tagHtml = getTags(item.note || '').map(tag => `<span class="tag">${tag}</span>`).join('');
         html += `
-            <div class="card">
-                <div>${item.note || '无标题'}</div>
-                <div>${getTags(item.note || '').map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
-                <a href="${item.url}" target="_blank">打开</a>
-            </div>
+        <div class="card">
+            <div class="title">${item.note || '无标题'}</div>
+            <div class="tag-wrap">${tagHtml}</div>
+            <a href="${item.url}" target="_blank">立即打开</a>
+        </div>
         `;
     });
     document.getElementById('grid').innerHTML = html;
-
-    // 更新统计信息
-    document.getElementById('stats').innerText = `找到 ${filtered.length} 个资源`;
+    document.getElementById('stats').innerText = `共找到 ${filtered.length} 个资源`;
 }
 
-// 搜索功能
+// 搜索
 async function search() {
-    const keyword = document.getElementById('kw').value.trim();
-    if (!keyword) return;
+    const kw = document.getElementById('kw').value.trim();
+    if (!kw) return;
 
-    const cache = getCache(keyword);
+    // 读取缓存
+    const cache = getCache(kw);
     if (cache) {
         raw = cache;
         renderFilter();
@@ -209,75 +292,53 @@ async function search() {
         return;
     }
 
-    // 从API获取数据
+    // 请求API
     for (let api of APIs) {
         try {
-            const response = await fetch(api + keyword);
-            const data = await response.json();
-            const items = data.data?.merged_by_type || {};
-            let allItems = [];
-            for (let type in items) allItems = allItems.concat(items[type]);
-            if (allItems.length) {
-                raw = allItems;
-                setCache(keyword, allItems);
+            const res = await fetch(api + encodeURIComponent(kw));
+            const json = await res.json();
+            const data = json.data?.merged_by_type || {};
+            let all = [];
+            Object.values(data).forEach(arr => all = all.concat(arr));
+            if (all.length > 0) {
+                raw = all;
+                setCache(kw, all);
                 renderFilter();
                 render();
                 return;
             }
         } catch (e) {
-            console.error('API请求失败:', e);
+            console.error('接口请求失败：', e);
         }
     }
-    alert('未能找到相关资源');
+    alert('未查询到相关资源，换个关键词试试');
 }
 
-// 实时搜索
-let searchTimeout;
-document.getElementById('kw').addEventListener('input', () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(search, 500);
+// 输入框回车搜索
+document.getElementById('kw').addEventListener('keydown', e => {
+    if (e.key === 'Enter') search();
 });
 
 // 音乐播放器
 let musicIndex = 0;
 const musicList = [
-    'https://mpimg.cn/view.php/93e1ad1d1ff45f0cc3f3d6dedcd6ba3c.mp3',
     'https://mpimg.cn/view.php/93e1ad1d1ff45f0cc3f3d6dedcd6ba3c.mp3'
 ];
-const musicElement = document.getElementById('music');
+const musicEle = document.getElementById('music');
 
 function toggleMusic() {
-    if (musicElement.paused) {
-        musicElement.src = musicList[musicIndex];
-        musicElement.play();
+    if (musicEle.paused) {
+        musicEle.src = musicList[musicIndex];
+        musicEle.play();
     } else {
-        musicElement.pause();
+        musicEle.pause();
     }
 }
-
-musicElement.onended = () => {
+musicEle.onended = () => {
     musicIndex = (musicIndex + 1) % musicList.length;
-    musicElement.src = musicList[musicIndex];
-    musicElement.play();
+    musicEle.src = musicList[musicIndex];
+    musicEle.play();
 };
-
-// 热门榜单功能
-function renderHotList() {
-    const hotHTML = hotList.map(item => `
-        <div class="card">
-            <div>${item.note}</div>
-            <a href="${item.url}" target="_blank">打开</a>
-        </div>
-    `).join('');
-    document.getElementById('grid').innerHTML = hotHTML;
-}
-
-// 假设获取热门榜单数据
-setInterval(() => {
-    hotList = raw.slice(0, 5); // 假设展示前五个
-    renderHotList();
-}, 10000);
-
 </script>
 
 </body>
