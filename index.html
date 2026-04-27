@@ -1,4 +1,4 @@
-以下是采用 iOS 26 风格设计、移除头像与滚动广告，并修复顶部布局后的完整 HTML 代码。
+以下是修复顶部布局并实现内容居中显示的 iOS 26 风格 HTML 代码。
 
 ```html
 <!DOCTYPE html>
@@ -14,11 +14,10 @@
             box-sizing: border-box;
         }
 
-        /* iOS 26 风格变量 - 毛玻璃、柔和阴影、圆润感 */
+        /* iOS 26 风格变量 */
         :root {
             --bg-color: #f5f5f7;
             --card-bg: rgba(255, 255, 255, 0.88);
-            --card-bg-solid: #ffffff;
             --text-primary: #1d1c1f;
             --text-secondary: #6c6c70;
             --text-tertiary: #8e8e93;
@@ -40,7 +39,6 @@
         body.dark {
             --bg-color: #000000;
             --card-bg: rgba(28, 28, 30, 0.88);
-            --card-bg-solid: #1c1c1e;
             --text-primary: #ffffff;
             --text-secondary: #98989e;
             --text-tertiary: #6c6c70;
@@ -66,16 +64,29 @@
             transition: background 0.3s ease;
         }
 
-        /* iOS 风格毛玻璃导航栏 */
-        .glass-nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* 主容器 - 居中且宽度优雅 */
+        .app-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        /* iOS 风格顶部栏 - 完全修复，无重叠 */
+        .ios-nav {
+            position: relative;
+            width: 100%;
             background: var(--glass-bg);
             backdrop-filter: var(--blur-bg);
             -webkit-backdrop-filter: var(--blur-bg);
             border-bottom: 0.5px solid var(--border-color);
-            padding: 12px 20px;
+            padding: 12px 0;
+        }
+
+        .nav-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 20px;
             display: flex;
             justify-content: flex-end;
             align-items: center;
@@ -101,13 +112,12 @@
             background: var(--filter-inactive);
         }
 
-        .container {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 20px 20px 40px;
+        /* 主内容区 - 完全居中 */
+        .main-content {
+            padding: 24px 0 40px;
         }
 
-        /* 搜索头部 iOS 卡片 */
+        /* 搜索头部卡片 */
         .search-header {
             background: var(--card-bg);
             backdrop-filter: var(--blur-bg);
@@ -146,7 +156,7 @@
 
         .search-input {
             flex: 1;
-            min-width: 240px;
+            min-width: 200px;
             padding: 14px 20px;
             font-size: 1rem;
             border: 0.5px solid var(--border-color);
@@ -156,7 +166,6 @@
             outline: none;
             transition: all 0.2s;
             font-weight: 400;
-            backdrop-filter: blur(10px);
         }
 
         .search-input:focus {
@@ -174,7 +183,6 @@
             font-weight: 590;
             cursor: pointer;
             transition: 0.2s;
-            backdrop-filter: blur(10px);
         }
 
         .search-btn:hover {
@@ -190,10 +198,9 @@
             padding: 6px 16px;
             border-radius: 40px;
             display: inline-block;
-            backdrop-filter: blur(10px);
         }
 
-        /* 筛选栏 iOS 胶囊风格 */
+        /* 筛选栏 */
         .filter-bar {
             margin: 16px 0 24px 0;
             background: var(--card-bg);
@@ -254,7 +261,7 @@
             color: var(--accent-color);
         }
 
-        /* 结果网格 iOS 精致卡片 */
+        /* 结果网格 - 卡片列表 */
         .results-grid {
             display: flex;
             flex-direction: column;
@@ -382,7 +389,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* iOS 风格的 smooth 滚动 */
         ::-webkit-scrollbar {
             width: 6px;
             background: transparent;
@@ -398,7 +404,8 @@
         }
 
         @media (max-width: 560px) {
-            .container { padding: 16px; }
+            .app-container { padding: 0 16px; }
+            .nav-inner { padding: 0 16px; }
             .search-header { padding: 22px 18px; }
             h1 { font-size: 1.7rem; }
             .search-input { padding: 12px 18px; font-size: 0.95rem; }
@@ -410,34 +417,39 @@
     </style>
 </head>
 <body>
-    <!-- iOS 风格顶部栏：只有主题按钮，无广告无头像 -->
-    <div class="glass-nav">
-        <button class="theme-toggle" id="themeToggle" aria-label="切换深色模式">🌙</button>
+    <!-- 顶部导航栏 - 完全独立，无重叠 -->
+    <div class="ios-nav">
+        <div class="nav-inner">
+            <button class="theme-toggle" id="themeToggle" aria-label="切换深色模式">🌙</button>
+        </div>
     </div>
 
-    <div class="container">
-        <div class="search-header">
-            <h1>小钱全网盘搜</h1>
-            <div class="sub">🚀 代理加速 · 智能缓存 · 按盘分类筛选</div>
-            <div class="search-box">
-                <input type="text" id="searchInput" class="search-input" placeholder="电影、剧集、短剧、书籍、资料..." autocomplete="off">
-                <button id="searchBtn" class="search-btn">搜索</button>
+    <!-- 主容器 - 内容居中 -->
+    <div class="app-container">
+        <div class="main-content">
+            <div class="search-header">
+                <h1>小钱全网盘搜</h1>
+                <div class="sub">🚀 代理加速 · 智能缓存 · 按盘分类筛选</div>
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="search-input" placeholder="电影、剧集、短剧、书籍、资料..." autocomplete="off" value="钢铁森林">
+                    <button id="searchBtn" class="search-btn">搜索</button>
+                </div>
+                <div id="statsArea" class="stats">✨ 已启用加速代理 · 支持网盘筛选</div>
             </div>
-            <div id="statsArea" class="stats">✨ 已启用加速代理 · 支持网盘筛选</div>
-        </div>
 
-        <!-- 动态筛选栏 -->
-        <div id="filterBar" class="filter-bar" style="display: none;">
-            <span class="filter-label">📂 网盘筛选</span>
-            <div id="filterChipsContainer" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
-            <button id="clearFilterBtn" class="clear-filter">清除</button>
-        </div>
+            <!-- 动态筛选栏 -->
+            <div id="filterBar" class="filter-bar" style="display: none;">
+                <span class="filter-label">📂 网盘筛选</span>
+                <div id="filterChipsContainer" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                <button id="clearFilterBtn" class="clear-filter">清除</button>
+            </div>
 
-        <div id="resultsContainer" class="results-grid">
-            <div class="empty-state">
-                🍃 iOS 26 风格 · 轻量流畅<br>
-                ✅ 百度 / 阿里 / 夸克 / 迅雷 分类筛选<br>
-                💡 试试「钢铁森林」「短剧」「蜜语纪」
+            <div id="resultsContainer" class="results-grid">
+                <div class="empty-state">
+                    🍃 iOS 26 风格 · 轻量流畅<br>
+                    ✅ 百度 / 阿里 / 夸克 / 迅雷 分类筛选<br>
+                    💡 试试「钢铁森林」「短剧」「蜜语纪」
+                </div>
             </div>
         </div>
     </div>
@@ -459,7 +471,6 @@
             let currentRawResults = [];
             let currentKeyword = '';
 
-            // 网盘识别 (增强)
             function getDiskType(url) {
                 if (!url) return '📎 链接';
                 const u = url.toLowerCase();
@@ -720,7 +731,6 @@
                 }
             }
 
-            // DOM 绑定
             const searchInput = document.getElementById('searchInput');
             const searchBtn = document.getElementById('searchBtn');
             const statsArea = document.getElementById('statsArea');
@@ -740,7 +750,6 @@
                 });
             }
             
-            // 主题切换
             const themeToggle = document.getElementById('themeToggle');
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark');
@@ -753,7 +762,13 @@
                 themeToggle.textContent = isDark ? '☀️' : '🌙';
             });
             
-            window.addEventListener('load', preloadHotKeywords);
+            window.addEventListener('load', () => {
+                preloadHotKeywords();
+                // 自动搜索预设词 "钢铁森林"
+                if (searchInput.value === '钢铁森林') {
+                    searchResources('钢铁森林');
+                }
+            });
         })();
     </script>
 </body>
