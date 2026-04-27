@@ -1,12 +1,12 @@
-以下是移除了头像和顶部滚动广告，并保留所有核心搜索与筛选功能的HTML代码。
+以下是采用 iOS 26 风格设计、移除头像与滚动广告，并修复顶部布局后的完整 HTML 代码。
 
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>小钱全网盘搜 · 极速分类筛选版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>小钱全网盘搜 · iOS 26 风格</title>
     <style>
         * {
             margin: 0;
@@ -14,188 +14,212 @@
             box-sizing: border-box;
         }
 
+        /* iOS 26 风格变量 - 毛玻璃、柔和阴影、圆润感 */
         :root {
-            --bg-color: #f5f7fb;
-            --card-bg: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #5b6e8c;
-            --border-color: #e9eef3;
-            --accent-color: #1e3c72;
-            --accent-hover: #0f2b4f;
-            --glass-bg: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --result-bg: rgba(30, 60, 114, 0.05);
-            --input-bg: rgba(255, 255, 255, 0.4);
-            --tag-bg: #eef2ff;
-            --password-tag: #fef3c7;
-            --filter-active: #1e3c72;
-            --filter-inactive: #e2e8f0;
-            --shadow-sm: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+            --bg-color: #f5f5f7;
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --card-bg-solid: #ffffff;
+            --text-primary: #1d1c1f;
+            --text-secondary: #6c6c70;
+            --text-tertiary: #8e8e93;
+            --border-color: rgba(224, 224, 230, 0.6);
+            --accent-color: #007aff;
+            --accent-hover: #005fc1;
+            --glass-bg: rgba(255, 255, 255, 0.72);
+            --result-bg: rgba(0, 122, 255, 0.08);
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --tag-bg: #e9e9ef;
+            --password-tag: #fff0e6;
+            --filter-active: #007aff;
+            --filter-inactive: #e9e9ef;
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04), 0 0 0 0.5px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.02);
+            --blur-bg: saturate(180%) blur(20px);
         }
 
         body.dark {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border-color: #334155;
-            --accent-color: #60a5fa;
-            --accent-hover: #3b82f6;
-            --glass-bg: rgba(0, 0, 0, 0.3);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --result-bg: rgba(96, 165, 250, 0.1);
-            --input-bg: rgba(30, 41, 59, 0.6);
-            --tag-bg: #334155;
-            --password-tag: #451a03;
-            --filter-active: #60a5fa;
-            --filter-inactive: #334155;
+            --bg-color: #000000;
+            --card-bg: rgba(28, 28, 30, 0.88);
+            --card-bg-solid: #1c1c1e;
+            --text-primary: #ffffff;
+            --text-secondary: #98989e;
+            --text-tertiary: #6c6c70;
+            --border-color: rgba(56, 56, 62, 0.8);
+            --accent-color: #0a84ff;
+            --accent-hover: #409cff;
+            --glass-bg: rgba(28, 28, 30, 0.78);
+            --result-bg: rgba(10, 132, 255, 0.12);
+            --input-bg: rgba(28, 28, 30, 0.8);
+            --tag-bg: #2c2c2e;
+            --password-tag: #3a2a1f;
+            --filter-active: #0a84ff;
+            --filter-inactive: #2c2c2e;
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(255, 255, 255, 0.05);
+            --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.05);
         }
 
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
+            transition: background 0.3s ease;
+        }
+
+        /* iOS 风格毛玻璃导航栏 */
+        .glass-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            border-bottom: 0.5px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
         }
 
         .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 45px;
-            height: 45px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background: var(--tag-bg);
+            border: none;
             cursor: pointer;
-            font-size: 22px;
+            font-size: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 101;
-            transition: all 0.3s;
-            box-shadow: var(--shadow-sm);
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            color: var(--text-primary);
         }
 
         .theme-toggle:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
+            background: var(--filter-inactive);
         }
 
         .container {
-            max-width: 1280px;
+            max-width: 720px;
             margin: 0 auto;
-            padding: 20px;
-            padding-top: 30px;
+            padding: 20px 20px 40px;
         }
 
+        /* 搜索头部 iOS 卡片 */
         .search-header {
             background: var(--card-bg);
-            border-radius: 32px;
-            padding: 32px 40px;
-            margin-bottom: 24px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-            backdrop-filter: blur(4px);
-            transition: all 0.2s;
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            border-radius: 28px;
+            padding: 28px 24px;
+            margin-bottom: 20px;
+            border: 0.5px solid var(--border-color);
             box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
         }
 
         h1 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin: 0 0 8px 0;
-            background: linear-gradient(135deg, #4a6cf7, #ff6b6b, #4ecdc4);
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #007aff, #5856d6, #ff2d55);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 6px;
         }
 
         .sub {
             color: var(--text-secondary);
-            margin-bottom: 28px;
-            font-size: 1rem;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            font-weight: 400;
         }
 
         .search-box {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
-            justify-content: center;
         }
 
         .search-input {
             flex: 1;
-            min-width: 300px;
-            padding: 16px 24px;
-            font-size: 1.1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 60px;
+            min-width: 240px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            border: 0.5px solid var(--border-color);
+            border-radius: 44px;
             background: var(--input-bg);
             color: var(--text-primary);
             outline: none;
             transition: all 0.2s;
+            font-weight: 400;
+            backdrop-filter: blur(10px);
         }
 
         .search-input:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
         }
 
         .search-btn {
-            min-width: 140px;
             background: var(--accent-color);
             color: white;
             border: none;
-            border-radius: 60px;
-            padding: 0 32px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 44px;
+            padding: 0 28px;
+            font-size: 1rem;
+            font-weight: 590;
             cursor: pointer;
             transition: 0.2s;
+            backdrop-filter: blur(10px);
         }
 
         .search-btn:hover {
             background: var(--accent-hover);
-            transform: scale(0.98);
+            transform: scale(0.97);
         }
 
         .stats {
-            margin-top: 20px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
+            margin-top: 18px;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
             background: var(--result-bg);
-            padding: 8px 20px;
+            padding: 6px 16px;
             border-radius: 40px;
             display: inline-block;
+            backdrop-filter: blur(10px);
         }
 
-        /* 筛选栏样式 */
+        /* 筛选栏 iOS 胶囊风格 */
         .filter-bar {
-            margin: 20px 0 28px 0;
+            margin: 16px 0 24px 0;
             background: var(--card-bg);
-            border-radius: 60px;
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
+            backdrop-filter: var(--blur-bg);
+            border-radius: 48px;
+            padding: 8px 16px;
+            border: 0.5px solid var(--border-color);
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             justify-content: center;
-            backdrop-filter: blur(4px);
         }
 
         .filter-label {
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 500;
             color: var(--text-secondary);
-            padding-left: 8px;
+            padding-left: 6px;
         }
 
         .filter-chip {
             background: var(--filter-inactive);
-            padding: 8px 20px;
+            padding: 6px 18px;
             border-radius: 40px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
             transition: 0.2s;
@@ -206,7 +230,7 @@
         .filter-chip.active {
             background: var(--filter-active);
             color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
         }
 
         .filter-chip:hover:not(.active) {
@@ -216,9 +240,9 @@
 
         .clear-filter {
             background: transparent;
-            border: 1px solid var(--border-color);
+            border: 0.5px solid var(--border-color);
             color: var(--text-secondary);
-            padding: 6px 16px;
+            padding: 5px 14px;
             border-radius: 40px;
             font-size: 0.75rem;
             cursor: pointer;
@@ -230,55 +254,61 @@
             color: var(--accent-color);
         }
 
+        /* 结果网格 iOS 精致卡片 */
         .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         .card {
             background: var(--card-bg);
-            border-radius: 24px;
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            border-radius: 20px;
             overflow: hidden;
-            border: 1px solid var(--border-color);
-            transition: all 0.25s ease;
+            border: 0.5px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: var(--shadow-sm);
         }
 
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
         .card-content {
-            padding: 20px 24px;
+            padding: 18px 20px;
         }
 
         .resource-title {
-            font-weight: 700;
-            font-size: 1.2rem;
-            line-height: 1.4;
+            font-weight: 630;
+            font-size: 1.1rem;
+            line-height: 1.35;
             margin-bottom: 12px;
             color: var(--text-primary);
+            letter-spacing: -0.01em;
         }
 
         .meta-info {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 16px;
-            font-size: 0.75rem;
+            margin-bottom: 14px;
         }
 
         .badge {
             background: var(--tag-bg);
             padding: 4px 12px;
             border-radius: 40px;
-            color: var(--text-primary);
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-secondary);
         }
 
         .password-badge {
             background: var(--password-tag);
-            color: #b45309;
+            color: #c45c1a;
         }
 
         .note {
@@ -286,9 +316,10 @@
             color: var(--text-secondary);
             margin: 12px 0;
             background: var(--result-bg);
-            padding: 10px 12px;
+            padding: 10px 14px;
             border-radius: 16px;
             word-break: break-word;
+            line-height: 1.4;
         }
 
         .link-btn {
@@ -296,12 +327,12 @@
             background: var(--accent-color);
             color: white;
             text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 40px;
-            font-weight: 500;
+            padding: 12px 18px;
+            border-radius: 44px;
+            font-weight: 590;
             font-size: 0.85rem;
             text-align: center;
-            margin-top: 12px;
+            margin-top: 14px;
             transition: 0.2s;
         }
 
@@ -310,36 +341,38 @@
         }
 
         .footer-info {
-            border-top: 1px solid var(--border-color);
-            background: var(--card-bg);
+            border-top: 0.5px solid var(--border-color);
+            background: transparent;
             padding: 12px 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             display: flex;
             justify-content: space-between;
+            color: var(--text-tertiary);
         }
 
         .empty-state, .error-state {
             background: var(--card-bg);
-            border-radius: 32px;
-            padding: 60px 24px;
+            backdrop-filter: var(--blur-bg);
+            border-radius: 28px;
+            padding: 52px 24px;
             text-align: center;
             color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-            font-size: 1rem;
+            border: 0.5px solid var(--border-color);
+            font-size: 0.95rem;
         }
 
         .loading {
             text-align: center;
-            padding: 60px;
-            font-size: 1rem;
+            padding: 52px;
+            font-size: 0.95rem;
             color: var(--accent-color);
         }
 
         .spinner {
             display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border-color);
+            width: 32px;
+            height: 32px;
+            border: 2.5px solid var(--border-color);
             border-top-color: var(--accent-color);
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
@@ -349,45 +382,62 @@
             to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 640px) {
-            .container { padding: 16px; padding-top: 20px; }
-            .search-header { padding: 24px 20px; }
-            h1 { font-size: 1.6rem; }
-            .search-input { min-width: 100%; font-size: 1rem; padding: 14px 20px; }
-            .search-btn { min-width: 100%; padding: 14px 20px; }
-            .results-grid { grid-template-columns: 1fr; gap: 16px; }
-            .theme-toggle { top: 15px; right: 15px; width: 40px; height: 40px; font-size: 20px; }
-            .filter-bar { border-radius: 30px; padding: 8px 12px; gap: 8px; }
-            .filter-chip { padding: 6px 14px; font-size: 0.75rem; }
+        /* iOS 风格的 smooth 滚动 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+        }
+
+        body.dark ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+        }
+
+        @media (max-width: 560px) {
+            .container { padding: 16px; }
+            .search-header { padding: 22px 18px; }
+            h1 { font-size: 1.7rem; }
+            .search-input { padding: 12px 18px; font-size: 0.95rem; }
+            .search-btn { padding: 0 22px; font-size: 0.95rem; }
+            .filter-chip { padding: 5px 14px; font-size: 0.75rem; }
+            .card-content { padding: 16px; }
+            .resource-title { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="theme-toggle" id="themeToggle">🌙</div>
+    <!-- iOS 风格顶部栏：只有主题按钮，无广告无头像 -->
+    <div class="glass-nav">
+        <button class="theme-toggle" id="themeToggle" aria-label="切换深色模式">🌙</button>
+    </div>
 
     <div class="container">
         <div class="search-header">
             <h1>小钱全网盘搜</h1>
             <div class="sub">🚀 代理加速 · 智能缓存 · 按盘分类筛选</div>
             <div class="search-box">
-                <input type="text" id="searchInput" class="search-input" placeholder="输入电影、剧集、短剧、书籍、音乐、软件、资料" autocomplete="off">
-                <button id="searchBtn" class="search-btn">🔍 极速搜索</button>
+                <input type="text" id="searchInput" class="search-input" placeholder="电影、剧集、短剧、书籍、资料..." autocomplete="off">
+                <button id="searchBtn" class="search-btn">搜索</button>
             </div>
-            <div id="statsArea" class="stats">✨ 代理加速已启用 · 支持网盘分类筛选</div>
+            <div id="statsArea" class="stats">✨ 已启用加速代理 · 支持网盘筛选</div>
         </div>
 
-        <!-- 筛选栏：动态显示网盘类型 -->
+        <!-- 动态筛选栏 -->
         <div id="filterBar" class="filter-bar" style="display: none;">
-            <span class="filter-label">📂 按网盘筛选：</span>
+            <span class="filter-label">📂 网盘筛选</span>
             <div id="filterChipsContainer" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
-            <button id="clearFilterBtn" class="clear-filter">✖️ 清除筛选</button>
+            <button id="clearFilterBtn" class="clear-filter">清除</button>
         </div>
 
         <div id="resultsContainer" class="results-grid">
             <div class="empty-state">
-                🚀 代理加速版搜索站已就绪<br>
-                ✅ 支持网盘分类筛选（百度/阿里/夸克/迅雷）<br>
-                💡 试试搜索「死神来了」「短剧」「蜜语纪」等关键词
+                🍃 iOS 26 风格 · 轻量流畅<br>
+                ✅ 百度 / 阿里 / 夸克 / 迅雷 分类筛选<br>
+                💡 试试「钢铁森林」「短剧」「蜜语纪」
             </div>
         </div>
     </div>
@@ -400,20 +450,18 @@
 
             function buildApiUrl(keyword) {
                 const encodedKw = encodeURIComponent(keyword);
-                if (USE_PROXY) {
-                    return PROXY_API + ORIGIN_API + encodedKw;
-                }
+                if (USE_PROXY) return PROXY_API + ORIGIN_API + encodedKw;
                 return ORIGIN_API + encodedKw;
             }
 
-            const cache = new Map();  
-            let currentFilterType = 'all';      
-            let currentRawResults = [];           
+            const cache = new Map();
+            let currentFilterType = 'all';
+            let currentRawResults = [];
             let currentKeyword = '';
 
-            // 增强网盘识别
+            // 网盘识别 (增强)
             function getDiskType(url) {
-                if (!url) return '🔗 网盘链接';
+                if (!url) return '📎 链接';
                 const u = url.toLowerCase();
                 if (u.includes('pan.baidu.com') || u.includes('baidu.com/s/')) return '📀 百度网盘';
                 if (u.includes('aliyundrive.com') || u.includes('alipan.com')) return '☁️ 阿里云盘';
@@ -500,14 +548,14 @@
                     filtered = filtered.filter(item => getPureDiskType(item.url) === currentFilterType);
                 }
                 if (filtered.length === 0) {
-                    resultsContainer.innerHTML = `<div class="empty-state">😞 当前筛选“${currentFilterType}”下暂无资源<br>💡 试试其他网盘分类或清除筛选</div>`;
+                    resultsContainer.innerHTML = `<div class="empty-state">😶 筛选“${currentFilterType}”下暂无资源<br>💡 试试清除筛选</div>`;
                     const totalOrigin = currentRawResults.length;
-                    statsArea.innerText = `🔍 找到 ${totalOrigin} 条资源 · 当前筛选显示 0 条 (${currentFilterType})`;
+                    statsArea.innerText = `🔍 共 ${totalOrigin} 条 · 筛选 0 条 (${currentFilterType})`;
                     return;
                 }
                 renderResultsDirect(filtered);
                 const totalOrigin = currentRawResults.length;
-                statsArea.innerHTML = `✅ 共 ${totalOrigin} 条资源 · 当前展示 ${filtered.length} 条 (筛选: ${currentFilterType === 'all' ? '全部网盘' : currentFilterType}) · 代理加速已缓存`;
+                statsArea.innerHTML = `✅ 共 ${totalOrigin} 条资源 · 展示 ${filtered.length} 条 (筛选: ${currentFilterType === 'all' ? '全部' : currentFilterType}) · 已缓存`;
             }
 
             function renderResultsDirect(resultsArray) {
@@ -520,37 +568,30 @@
                     tip.className = 'stats';
                     tip.style.marginTop = '16px';
                     tip.style.textAlign = 'center';
-                    tip.innerText = `✨ 共 ${resultsArray.length} 条结果，已全部展示`;
+                    tip.innerText = `✨ 共 ${resultsArray.length} 条结果，已全部加载`;
                     resultsContainer.appendChild(tip);
                 }
             }
 
             function formatDate(dateStr) {
-                if (!dateStr || dateStr.startsWith('0001-01-01')) return '时间未知';
+                if (!dateStr || dateStr.startsWith('0001-01-01')) return '日期未知';
                 try {
                     const date = new Date(dateStr);
                     if (isNaN(date.getTime())) return dateStr.split('T')[0];
                     return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
-                } catch(e) {
-                    return dateStr;
-                }
+                } catch(e) { return dateStr; }
             }
 
             function escapeHtml(str) {
                 if (!str) return '';
-                return str.replace(/[&<>]/g, function(m) {
-                    if (m === '&') return '&amp;';
-                    if (m === '<') return '&lt;';
-                    if (m === '>') return '&gt;';
-                    return m;
-                });
+                return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
             }
 
             function renderCard(item) {
-                const title = item.note || item.title || '无标题资源';
+                const title = item.note || item.title || '未命名资源';
                 const url = item.url || '#';
                 const password = item.password || '';
-                const source = item.source || '网络共享';
+                const source = item.source || '共享源';
                 const datetime = item.datetime ? formatDate(item.datetime) : '时间未知';
                 const noteDetail = item.note || '';
                 const diskType = getDiskType(url);
@@ -565,25 +606,25 @@
                                 <span class="badge">📡 ${escapeHtml(source)}</span>
                                 ${password ? `<span class="badge password-badge">🔑 提取码: ${escapeHtml(password)}</span>` : ''}
                             </div>
-                            ${noteDetail && noteDetail !== title ? `<div class="note">📄 ${escapeHtml(noteDetail.substring(0, 180))}${noteDetail.length > 180 ? '…' : ''}</div>` : ''}
-                            <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="link-btn">📂 打开资源链接 →</a>
+                            ${noteDetail && noteDetail !== title ? `<div class="note">📄 ${escapeHtml(noteDetail.substring(0, 160))}${noteDetail.length > 160 ? '…' : ''}</div>` : ''}
+                            <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="link-btn">打开资源链接 ↗</a>
                         </div>
                         <div class="footer-info">
-                            <span>✨ 来源: ${escapeHtml(source)}</span>
-                            ${password ? `<span>🔐 密码: ${escapeHtml(password)}</span>` : '<span>🔓 无密码</span>'}
+                            <span>来源: ${escapeHtml(source)}</span>
+                            ${password ? `<span>密码: ${escapeHtml(password)}</span>` : '<span>无密码</span>'}
                         </div>
                     </div>
                 `;
             }
 
             function showLoading() {
-                resultsContainer.innerHTML = `<div class="loading"><div class="spinner"></div><div style="margin-top:12px;">🚀 代理加速请求中，智能缓存启用...</div></div>`;
+                resultsContainer.innerHTML = `<div class="loading"><div class="spinner"></div><div style="margin-top:12px;">正在加速搜索...</div></div>`;
                 document.getElementById('filterBar').style.display = 'none';
             }
 
             function showError(msg) {
-                resultsContainer.innerHTML = `<div class="error-state">⚠️ 请求失败: ${escapeHtml(msg)}<br><br>💡 提示: 代理服务器可能繁忙，请重试或检查网络</div>`;
-                statsArea.innerText = `❌ 请求失败: ${msg}`;
+                resultsContainer.innerHTML = `<div class="error-state">⚠️ ${escapeHtml(msg)}<br><br>🔄 请重试或稍后再试</div>`;
+                statsArea.innerText = `❌ 请求失败`;
                 document.getElementById('filterBar').style.display = 'none';
                 currentRawResults = [];
                 currentFilterType = 'all';
@@ -591,8 +632,8 @@
 
             function renderEmptyOrError(state, kw) {
                 if (state === 'empty') {
-                    resultsContainer.innerHTML = `<div class="empty-state">😞 未找到关于 “${escapeHtml(kw)}” 的资源<br>试试其他关键词 (例如: 蜜语纪、短剧、死神来了)</div>`;
-                    statsArea.innerText = `🔍 没有找到与 “${kw}” 相关的结果`;
+                    resultsContainer.innerHTML = `<div class="empty-state">🔍 未找到 “${escapeHtml(kw)}” 的相关资源<br>试试「钢铁森林」「短剧」等关键词</div>`;
+                    statsArea.innerText = `无结果: ${kw}`;
                 }
                 document.getElementById('filterBar').style.display = 'none';
             }
@@ -602,13 +643,10 @@
                     try {
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), timeout);
-                        const response = await fetch(url, { 
-                            signal: controller.signal, 
-                            headers: { 'Accept': 'application/json' }
-                        });
+                        const res = await fetch(url, { signal: controller.signal, headers: { 'Accept': 'application/json' } });
                         clearTimeout(timeoutId);
-                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                        return await response.json();
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        return await res.json();
                     } catch (err) {
                         if (i === retries) throw err;
                         await new Promise(r => setTimeout(r, 500));
@@ -618,8 +656,8 @@
 
             async function searchResources(keyword) {
                 if (!keyword || keyword.trim() === '') {
-                    statsArea.innerText = '⚠️ 请输入搜索关键词';
-                    resultsContainer.innerHTML = `<div class="empty-state">📌 请输入电影/剧集/资源名称</div>`;
+                    statsArea.innerText = '🕹️ 请输入关键词';
+                    resultsContainer.innerHTML = `<div class="empty-state">📌 试试「钢铁森林」「蜜语纪」</div>`;
                     document.getElementById('filterBar').style.display = 'none';
                     return;
                 }
@@ -633,92 +671,63 @@
                     const types = extractDiskTypesFromResults(currentRawResults);
                     renderFilterBar(types);
                     applyFilterAndRender();
-                    statsArea.innerHTML = `⚡ 缓存命中 · 共 ${cached.total} 条资源 · 支持网盘筛选`;
+                    statsArea.innerHTML = `⚡ 缓存 · 共 ${cached.total} 条 · 支持筛选`;
                     return;
                 }
                 
-                statsArea.innerText = `🚀 代理加速请求中 · 关键词: ${kw}`;
+                statsArea.innerText = `🚀 代理搜索: ${kw}`;
                 showLoading();
                 
                 try {
                     const apiUrl = buildApiUrl(kw);
                     const data = await fetchWithTimeout(apiUrl, 9000, 1);
-                    
-                    if (data.code !== 0 || !data.data) {
-                        throw new Error(data.message || '接口返回数据异常');
-                    }
+                    if (data.code !== 0 || !data.data) throw new Error(data.message || '接口异常');
                     
                     const mergedByType = data.data.merged_by_type || {};
                     let allResults = [];
                     for (let type in mergedByType) {
-                        if (Array.isArray(mergedByType[type])) {
-                            allResults = allResults.concat(mergedByType[type]);
-                        }
+                        if (Array.isArray(mergedByType[type])) allResults = allResults.concat(mergedByType[type]);
                     }
-                    
                     if (allResults.length === 0) {
                         renderEmptyOrError('empty', kw);
                         currentRawResults = [];
-                        document.getElementById('filterBar').style.display = 'none';
                         return;
                     }
                     
                     const total = data.data.total || allResults.length;
                     currentRawResults = allResults;
-                    
                     cache.set(kw, { allResults, total });
-                    if (cache.size > 55) {
+                    if (cache.size > 50) {
                         const firstKey = cache.keys().next().value;
                         cache.delete(firstKey);
                     }
-                    
                     const diskTypes = extractDiskTypesFromResults(allResults);
                     renderFilterBar(diskTypes);
                     applyFilterAndRender();
-                    statsArea.innerHTML = `✅ 找到 ${total} 条资源 · 支持 ${diskTypes.length} 种网盘筛选 (已缓存)`;
-                    
+                    statsArea.innerHTML = `✅ ${total} 条资源 · ${diskTypes.length} 种网盘 · 已缓存`;
                 } catch (err) {
-                    console.error('搜索出错:', err);
-                    if (err.name === 'AbortError') {
-                        showError('请求超时 (9秒)，代理服务器响应较慢，请重试');
-                    } else {
-                        showError(err.message || '网络错误或代理不可用');
-                    }
+                    console.error(err);
+                    showError(err.message || '网络或代理错误，请重试');
                 }
             }
 
             function preloadHotKeywords() {
-                const hotWords = ['短剧', '电影', '死神来了', '电视剧', '4K', '蜜语纪'];
+                const hot = ['短剧', '死神来了', '钢铁森林', '4K电影'];
                 if ('requestIdleCallback' in window) {
-                    requestIdleCallback(() => {
-                        hotWords.forEach(kw => {
-                            if (!cache.has(kw)) {
-                                fetchWithTimeout(buildApiUrl(kw), 10000, 0).catch(() => {});
-                            }
-                        });
-                    });
+                    requestIdleCallback(() => hot.forEach(kw => { if (!cache.has(kw)) fetchWithTimeout(buildApiUrl(kw), 10000, 0).catch(()=>{}); }));
                 } else {
-                    setTimeout(() => {
-                        hotWords.forEach(kw => {
-                            if (!cache.has(kw)) {
-                                fetchWithTimeout(buildApiUrl(kw), 10000, 0).catch(() => {});
-                            }
-                        });
-                    }, 2000);
+                    setTimeout(() => hot.forEach(kw => { if (!cache.has(kw)) fetchWithTimeout(buildApiUrl(kw), 10000, 0).catch(()=>{}); }), 2000);
                 }
             }
 
+            // DOM 绑定
             const searchInput = document.getElementById('searchInput');
             const searchBtn = document.getElementById('searchBtn');
-            const resultsContainer = document.getElementById('resultsContainer');
             const statsArea = document.getElementById('statsArea');
             const clearFilterBtn = document.getElementById('clearFilterBtn');
             
             searchBtn.addEventListener('click', () => searchResources(searchInput.value));
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') searchResources(searchInput.value);
-            });
-            
+            searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchResources(searchInput.value); });
             if (clearFilterBtn) {
                 clearFilterBtn.addEventListener('click', () => {
                     if (currentRawResults.length) {
@@ -730,8 +739,8 @@
                     }
                 });
             }
-
-            // 主题逻辑
+            
+            // 主题切换
             const themeToggle = document.getElementById('themeToggle');
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark');
@@ -744,9 +753,7 @@
                 themeToggle.textContent = isDark ? '☀️' : '🌙';
             });
             
-            window.addEventListener('load', () => {
-                preloadHotKeywords();
-            });
+            window.addEventListener('load', preloadHotKeywords);
         })();
     </script>
 </body>
