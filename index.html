@@ -11,7 +11,7 @@
             box-sizing: border-box;
         }
 
-        /* iOS 26 风格变量 - 精致毛玻璃 */
+        /* iOS 26 风格变量 */
         :root {
             --bg-color: #f5f5f7;
             --card-bg: rgba(255, 255, 255, 0.88);
@@ -61,14 +61,14 @@
             transition: background 0.3s ease;
         }
 
-        /* 主布局：Flex 列 + 居中对齐 */
+        /* 主布局 */
         .app-wrapper {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* 顶部导航栏 - 干净无重叠 */
+        /* 顶部导航栏 */
         .ios-nav {
             position: sticky;
             top: 0;
@@ -104,7 +104,12 @@
             color: var(--text-primary);
         }
 
-        /* 主内容区 - 完美居中 */
+        .theme-toggle:hover {
+            transform: scale(1.02);
+            background: var(--filter-inactive);
+        }
+
+        /* 主内容区 - 居中 */
         .main-container {
             flex: 1;
             width: 100%;
@@ -113,16 +118,17 @@
             padding: 20px 20px 40px;
         }
 
-        /* 搜索卡片 */
+        /* 搜索卡片 - 所有内容居中 */
         .search-card {
             background: var(--card-bg);
             backdrop-filter: var(--blur-bg);
             -webkit-backdrop-filter: var(--blur-bg);
             border-radius: 28px;
-            padding: 28px 24px;
+            padding: 32px 24px;
             margin-bottom: 20px;
             border: 0.5px solid var(--border-color);
             box-shadow: var(--shadow-sm);
+            text-align: center;
         }
 
         h1 {
@@ -133,12 +139,12 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .sub {
             color: var(--text-secondary);
-            margin-bottom: 24px;
+            margin-bottom: 28px;
             font-size: 0.9rem;
             font-weight: 400;
         }
@@ -147,11 +153,13 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .search-input {
             flex: 1;
-            min-width: 200px;
+            min-width: 240px;
+            max-width: 400px;
             padding: 14px 20px;
             font-size: 1rem;
             border: 0.5px solid var(--border-color);
@@ -160,6 +168,7 @@
             color: var(--text-primary);
             outline: none;
             transition: all 0.2s;
+            text-align: left;
         }
 
         .search-input:focus {
@@ -184,7 +193,7 @@
         }
 
         .stats-badge {
-            margin-top: 18px;
+            margin-top: 20px;
             font-size: 0.8rem;
             color: var(--text-tertiary);
             background: var(--result-bg);
@@ -254,7 +263,7 @@
             color: var(--accent-color);
         }
 
-        /* 结果列表 - 无重叠 */
+        /* 结果列表 */
         .results-list {
             display: flex;
             flex-direction: column;
@@ -380,9 +389,9 @@
 
         @media (max-width: 560px) {
             .main-container { padding: 16px; }
-            .search-card { padding: 22px 18px; }
+            .search-card { padding: 24px 18px; }
             h1 { font-size: 1.7rem; }
-            .search-input { padding: 12px 18px; }
+            .search-input { padding: 12px 18px; min-width: 180px; }
             .search-btn { padding: 0 22px; }
             .filter-chip { padding: 5px 14px; font-size: 0.75rem; }
             .card-inner { padding: 16px; }
@@ -391,20 +400,20 @@
 </head>
 <body>
 <div class="app-wrapper">
-    <!-- 顶部独立导航：无广告无头像，只有主题切换 -->
+    <!-- 顶部导航栏 -->
     <div class="ios-nav">
         <div class="nav-inner">
             <button class="theme-toggle" id="themeToggle" aria-label="深色模式">🌙</button>
         </div>
     </div>
 
-    <!-- 主内容区：完全居中，干净无重叠 -->
+    <!-- 主内容区 -->
     <div class="main-container">
         <div class="search-card">
             <h1>小钱全网盘搜</h1>
             <div class="sub">🚀 代理加速 · 智能缓存 · 按盘分类筛选</div>
             <div class="search-box">
-                <input type="text" id="searchInput" class="search-input" placeholder="电影、剧集、短剧、书籍、资料..." autocomplete="off" value="钢铁森林">
+                <input type="text" id="searchInput" class="search-input" placeholder="电影、剧集、短剧、书籍、资料..." autocomplete="off">
                 <button id="searchBtn" class="search-btn">搜索</button>
             </div>
             <div id="statsArea" class="stats-badge">✨ 已启用加速代理 · 支持网盘筛选</div>
@@ -441,8 +450,8 @@
 
         // 全局状态
         const cache = new Map();
-        let currentFilter = 'all';       // 'all' 或具体网盘名
-        let currentResults = [];          // 原始结果数组
+        let currentFilter = 'all';
+        let currentResults = [];
         let currentKeyword = '';
 
         // ---------- 网盘识别 ----------
@@ -464,7 +473,6 @@
             return '其他';
         }
 
-        // 提取存在的网盘类型（按顺序）
         function extractDiskTypes(results) {
             const set = new Set();
             for (const item of results) {
@@ -487,7 +495,6 @@
             filterBar.style.display = 'flex';
             chipsContainer.innerHTML = '';
 
-            // 全部按钮
             const allChip = document.createElement('button');
             allChip.className = `filter-chip ${currentFilter === 'all' ? 'active' : ''}`;
             allChip.textContent = `全部 (${currentResults.length})`;
@@ -600,8 +607,13 @@
 
         function renderEmptyState(kw) {
             const container = document.getElementById('resultsContainer');
-            container.innerHTML = `<div class="empty-box">🔍 未找到 “${escapeHtml(kw)}” 的相关资源<br>试试「钢铁森林」「短剧」等关键词</div>`;
-            document.getElementById('statsArea').innerText = `无结果: ${kw}`;
+            if (kw) {
+                container.innerHTML = `<div class="empty-box">🔍 未找到 “${escapeHtml(kw)}” 的相关资源<br>试试「钢铁森林」「短剧」等关键词</div>`;
+                document.getElementById('statsArea').innerText = `无结果: ${kw}`;
+            } else {
+                container.innerHTML = `<div class="empty-box">🍃 iOS 26 风格 · 轻量流畅<br>✅ 百度 / 阿里 / 夸克 / 迅雷 分类筛选<br>💡 试试「钢铁森林」「短剧」「蜜语纪」</div>`;
+                document.getElementById('statsArea').innerText = `✨ 已启用加速代理 · 支持网盘筛选`;
+            }
         }
 
         function showLoading() {
@@ -637,15 +649,14 @@
         async function searchResources(keyword) {
             const kw = keyword.trim();
             if (!kw) {
-                document.getElementById('statsArea').innerText = '🕹️ 请输入关键词';
-                document.getElementById('resultsContainer').innerHTML = `<div class="empty-box">📌 试试「钢铁森林」「蜜语纪」</div>`;
+                document.getElementById('statsArea').innerText = '🔍 请输入关键词';
+                document.getElementById('resultsContainer').innerHTML = `<div class="empty-box">📌 请输入电影、剧集、资源名称<br>💡 试试「钢铁森林」「短剧」「蜜语纪」</div>`;
                 document.getElementById('filterBar').style.display = 'none';
                 return;
             }
             currentKeyword = kw;
             currentFilter = 'all';
 
-            // 缓存命中
             if (cache.has(kw)) {
                 const cached = cache.get(kw);
                 currentResults = cached.allResults;
@@ -694,7 +705,7 @@
             }
         }
 
-        // 预加载热门词
+        // 预加载热门词（静默，不自动搜索）
         function preloadHot() {
             const hot = ['短剧', '死神来了', '钢铁森林', '蜜语纪'];
             const loadOne = (kw) => {
@@ -711,8 +722,12 @@
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
         const clearFilterBtn = document.getElementById('clearFilterBtn');
+        
         searchBtn.addEventListener('click', () => searchResources(searchInput.value));
-        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchResources(searchInput.value); });
+        searchInput.addEventListener('keypress', (e) => { 
+            if (e.key === 'Enter') searchResources(searchInput.value); 
+        });
+        
         if (clearFilterBtn) {
             clearFilterBtn.addEventListener('click', () => {
                 if (currentResults.length) {
@@ -738,12 +753,12 @@
             themeToggle.textContent = isDark ? '☀️' : '🌙';
         });
 
-        // 自动搜索预设词
+        // 页面加载：只预加载热门词，不自动搜索任何词
         window.addEventListener('load', () => {
             preloadHot();
-            if (searchInput.value === '钢铁森林') {
-                searchResources('钢铁森林');
-            }
+            // 清空搜索框，显示欢迎状态
+            searchInput.value = '';
+            renderEmptyState('');
         });
     })();
 </script>
