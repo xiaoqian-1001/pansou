@@ -1,4 +1,4 @@
-以下是去掉音乐功能、并将“裤佬”更名为“小钱”后的完整HTML代码。
+以下是移除了头像和顶部滚动广告，并保留所有核心搜索与筛选功能的HTML代码。
 
 ```html
 <!DOCTYPE html>
@@ -24,7 +24,6 @@
             --accent-hover: #0f2b4f;
             --glass-bg: rgba(255, 255, 255, 0.15);
             --glass-border: rgba(255, 255, 255, 0.2);
-            --marquee-bg: rgba(255, 255, 255, 0.15);
             --result-bg: rgba(30, 60, 114, 0.05);
             --input-bg: rgba(255, 255, 255, 0.4);
             --tag-bg: #eef2ff;
@@ -44,7 +43,6 @@
             --accent-hover: #3b82f6;
             --glass-bg: rgba(0, 0, 0, 0.3);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --marquee-bg: rgba(0, 0, 0, 0.3);
             --result-bg: rgba(96, 165, 250, 0.1);
             --input-bg: rgba(30, 41, 59, 0.6);
             --tag-bg: #334155;
@@ -63,7 +61,7 @@
 
         .theme-toggle {
             position: fixed;
-            top: 70px;
+            top: 20px;
             right: 20px;
             width: 45px;
             height: 45px;
@@ -84,54 +82,11 @@
             transform: scale(1.05);
         }
 
-        .marquee-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: var(--marquee-bg);
-            backdrop-filter: blur(12px);
-            padding: 8px 0;
-            z-index: 100;
-            overflow: hidden;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .marquee {
-            white-space: nowrap;
-            display: inline-block;
-            animation: marquee 22s linear infinite;
-            padding-left: 100%;
-        }
-
-        .marquee a {
-            color: var(--text-primary);
-            font-weight: bold;
-            text-decoration: none;
-            padding: 0 30px;
-            font-size: 15px;
-            display: inline-block;
-            background: rgba(255,255,255,0.2);
-            border-radius: 30px;
-            margin: 0 5px;
-            transition: background 0.2s;
-        }
-
-        .marquee a:hover {
-            background: rgba(74,108,247,0.3);
-            text-decoration: underline;
-        }
-
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
-        }
-
         .container {
             max-width: 1280px;
             margin: 0 auto;
             padding: 20px;
-            padding-top: 80px;
+            padding-top: 30px;
         }
 
         .search-header {
@@ -153,29 +108,6 @@
             background: linear-gradient(135deg, #4a6cf7, #ff6b6b, #4ecdc4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .avatar-wrapper {
-            display: flex;
-            justify-content: center;
-            margin: 15px 0 20px 0;
-        }
-
-        .avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid rgba(255,255,255,0.5);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            backdrop-filter: blur(2px);
-            transition: transform 0.2s;
-            cursor: pointer;
-        }
-
-        .avatar:hover {
-            transform: scale(1.05);
-            border-color: var(--accent-color);
         }
 
         .sub {
@@ -418,42 +350,24 @@
         }
 
         @media (max-width: 640px) {
-            .container { padding: 16px; padding-top: 80px; }
+            .container { padding: 16px; padding-top: 20px; }
             .search-header { padding: 24px 20px; }
             h1 { font-size: 1.6rem; }
             .search-input { min-width: 100%; font-size: 1rem; padding: 14px 20px; }
             .search-btn { min-width: 100%; padding: 14px 20px; }
             .results-grid { grid-template-columns: 1fr; gap: 16px; }
-            .theme-toggle { top: 70px; right: 15px; width: 40px; height: 40px; font-size: 20px; }
-            .avatar { width: 65px; height: 65px; }
+            .theme-toggle { top: 15px; right: 15px; width: 40px; height: 40px; font-size: 20px; }
             .filter-bar { border-radius: 30px; padding: 8px 12px; gap: 8px; }
             .filter-chip { padding: 6px 14px; font-size: 0.75rem; }
         }
     </style>
 </head>
 <body>
-    <div class="marquee-container">
-        <div class="marquee">
-            <a href="https://kelayun.notepin.co" target="_blank" rel="noopener noreferrer">
-                🔥 最低月付2元1000G机场推荐 / 解锁奈飞.TikTok.Gemini / 不限速不限设备不限地区
-            </a>
-            <a href="https://kelayun.notepin.co" target="_blank" rel="noopener noreferrer">
-                🔥 最低月付2元1000G机场推荐 / 解锁奈飞.TikTok.Gemini / 不限速不限设备不限地区
-            </a>
-        </div>
-    </div>
-
     <div class="theme-toggle" id="themeToggle">🌙</div>
 
     <div class="container">
         <div class="search-header">
             <h1>小钱全网盘搜</h1>
-            <div class="avatar-wrapper">
-                <img src="https://mpimg.cn/view.php/f28da3eac8f392e9fa2ba91723b2bf4c.png" 
-                     alt="头像" 
-                     class="avatar"
-                     onerror="this.onerror=null; this.src='https://via.placeholder.com/80x80?text=Avatar'">
-            </div>
             <div class="sub">🚀 代理加速 · 智能缓存 · 按盘分类筛选</div>
             <div class="search-box">
                 <input type="text" id="searchInput" class="search-input" placeholder="输入电影、剧集、短剧、书籍、音乐、软件、资料" autocomplete="off">
@@ -817,7 +731,7 @@
                 });
             }
 
-            // 主题逻辑（无音乐）
+            // 主题逻辑
             const themeToggle = document.getElementById('themeToggle');
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark');
